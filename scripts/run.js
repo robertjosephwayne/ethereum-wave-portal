@@ -1,4 +1,8 @@
 const main = async () => {
+    // owner is the wallet address of the contract owner.
+    // randomPerson is a random wallet address.
+    const [owner, randomPerson] = await hre.ethers.getSigners();
+
     // This will compile the contract and generate the necessary files
     // needed to work with the contract under the artifacts directory.
     // The Hardhat Runtime Environment, or HRE, 
@@ -15,7 +19,21 @@ const main = async () => {
     // Wait until the contract is deployed to the local blockchain.
     await waveContract.deployed();
 
-    console.log('Contract deployed to: ', waveContract.address);
+    console.log("Contract deployed to: ", waveContract.address);
+    console.log("Contract deployed by: ", owner.address);
+
+    let waveCount;
+    waveCount = await waveContract.getTotalWaves();
+
+    let waveTxn = await waveContract.wave();
+    await waveTxn.wait();
+
+    waveCount = await waveContract.getTotalWaves();
+
+    waveTxn = await waveContract.connect(randomPerson).wave();
+    await waveContract.wait();
+
+    waveCount = await waveContract.getTotalWaves();
 };
 
 const runMain = async () => {
