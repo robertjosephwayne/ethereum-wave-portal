@@ -11,5 +11,12 @@ contract WavePortal {
     constructor() {
         console.log("WavePortal contract constructor called.");
     }
+
+    function wave() public {
+        totalWaves += 1;
+        // msg.sender is the wallet address of the person who called this function.
+        console.log("%s has waved!", msg.sender);
+    }
+
 }
 
