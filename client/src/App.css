@@ -1,43 +1,49 @@
 .main-container {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: 64px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 64px;
 }
 
 .data-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 600px;
 }
 
 .header {
-  text-align: center;
-  font-size: 32px;
-  font-weight: 600;
+    text-align: center;
+    font-size: 32px;
+    font-weight: 600;
 }
 
 .bio {
-  text-align: center;
-  color: gray;
-  margin-top: 16px;
+    text-align: center;
+    margin-top: 16px;
 }
 
-.wave-button {
-  cursor: pointer;
-  margin-top: 16px;
-  padding: 8px;
-  border: 0;
-  border-radius: 5px;
+.button-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 15px;
 }
 
-.wave-count {
-    padding: 15px;
+.wave-count-container {
     text-align: center;
 }
 
-.loading {
-    padding: 15px;
+.wave-count-container div {
+    margin-top: 15px;
+}
+
+.transaction-container {
+    margin-top: 15px;
     text-align: center;
+}
+
+.transaction-container a {
+    padding-left: 5px;
 }
