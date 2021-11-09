@@ -13,7 +13,7 @@ const main = async () => {
     });
     await waveContract.deployed();
 
-    console.log("WavePortal address: ", portal.address);
+    console.log('WavePortal address: ', waveContract.address);
 };
 
 const runMain = async () => {
