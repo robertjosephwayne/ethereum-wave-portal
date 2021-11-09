@@ -83,7 +83,9 @@ export default function App() {
                     'Please enter a message to include with your wave: ',
                 );
 
-                const waveTxn = await wavePortalContract.wave(message || '');
+                const waveTxn = await wavePortalContract.wave(message || '', {
+                    gasLimit: 300000,
+                });
                 setLoading(true);
                 setPendingTransaction(waveTxn.hash);
 
