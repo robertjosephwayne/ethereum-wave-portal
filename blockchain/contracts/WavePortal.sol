@@ -18,12 +18,17 @@ contract WavePortal {
 
     Wave[] waves;
 
+    mapping(address => uint256) public lastWavedAt;
+
     constructor() payable {
         console.log("WavePortal contract constructor called.");
         seed = (block.timestamp + block.difficulty) % 100;
     }
 
     function wave(string memory _message) public {
+        require(lastWavedAt[msg.sender] + 15 minutes < block.timestamp, "Wait 15 minutes");
+        lastWavedAt[msg.sender] = block.timestamp;
+
         totalWaves += 1;
         // msg.sender is the wallet address of the person who called this function.
         console.log("%s has waved!", msg.sender);
