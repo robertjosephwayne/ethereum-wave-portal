@@ -11,7 +11,7 @@ export default function App() {
     const [loading, setLoading] = useState(false);
     const [pendingTransaction, setPendingTransaction] = useState('');
     const [lastTransaction, setLastTransaction] = useState('');
-    const contractAddress = '0xCD3255ac7dcfD72a896a66577469590Fe36Ce48A';
+    const contractAddress = '0x6c2E658c1DA6432A82beBDBFD72cD3DAbBD4a28D';
     const contractABI = abi.abi;
 
     const checkIfWalletIsConnected = async () => {
