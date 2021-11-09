@@ -41,9 +41,20 @@
 
 .transaction-container {
     margin-top: 15px;
+    margin-bottom: 15px;
     text-align: center;
 }
 
 .transaction-container a {
     padding-left: 5px;
+}
+
+.loading-container {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.wave-transaction {
+    margin-top: 15px;
+    text-align: left;
 }

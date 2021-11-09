@@ -1,16 +1,22 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import { ethers } from 'ethers';
 import abi from './utils/WavePortal.json';
 
-import { Button, CircularProgress } from '@mui/material';
+import {
+    Button,
+    Card,
+    CardContent,
+    CircularProgress,
+    Typography,
+} from '@mui/material';
 
 export default function App() {
+    const [allWaves, setAllWaves] = useState([]);
     const [currentWaveCount, setCurrentWaveCount] = useState(0);
     const [currentAccount, setCurrentAccount] = useState('');
     const [loading, setLoading] = useState(false);
     const [pendingTransaction, setPendingTransaction] = useState('');
-    const [lastTransaction, setLastTransaction] = useState('');
     const contractAddress = '0x6c2E658c1DA6432A82beBDBFD72cD3DAbBD4a28D';
     const contractABI = abi.abi;
 
@@ -31,6 +37,7 @@ export default function App() {
                 const account = accounts[0];
                 console.log('Found an authorized account: ', account);
                 setCurrentAccount(account);
+                getAllWaves();
             } else {
                 console.log('No authorized account found.');
             }
@@ -72,16 +79,18 @@ export default function App() {
                     signer,
                 );
 
-                const waveTxn = await wavePortalContract.wave();
+                const message = prompt(
+                    'Please enter a message to include with your wave: ',
+                );
+
+                const waveTxn = await wavePortalContract.wave(message || '');
                 setLoading(true);
                 setPendingTransaction(waveTxn.hash);
 
                 await waveTxn.wait();
                 setPendingTransaction('');
-                setLastTransaction(waveTxn.hash);
-                setLoading(false);
-
                 refreshCurrentWaveCount();
+                setLoading(false);
             } else {
                 console.log("Ethereum object doesn't exist!");
             }
@@ -90,7 +99,7 @@ export default function App() {
         }
     };
 
-    const refreshCurrentWaveCount = useCallback(async () => {
+    const refreshCurrentWaveCount = async () => {
         try {
             const { ethereum } = window;
 
@@ -113,10 +122,42 @@ export default function App() {
         } catch (error) {
             console.log(error);
         }
-    });
+    };
 
     const getEtherscanURL = (transaction) => {
         return `https://rinkeby.etherscan.io/tx/${transaction}`;
+    };
+
+    const getAllWaves = async () => {
+        try {
+            const { ethereum } = window;
+            if (ethereum) {
+                const provider = new ethers.providers.Web3Provider(ethereum);
+                const signer = provider.getSigner();
+                const wavePortalContract = new ethers.Contract(
+                    contractAddress,
+                    contractABI,
+                    signer,
+                );
+
+                const waves = await wavePortalContract.getAllWaves();
+
+                let wavesCleaned = [];
+                waves.forEach((wave) => {
+                    wavesCleaned.push({
+                        address: wave.waver,
+                        timestamp: new Date(wave.timestamp * 1000),
+                        message: wave.message,
+                    });
+                });
+
+                setAllWaves(wavesCleaned);
+            } else {
+                console.log("Ethereum object doesn't exist!");
+            }
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     useEffect(() => {
@@ -140,19 +181,14 @@ export default function App() {
                 <div className="wave-count-container">
                     {!loading && !!currentWaveCount && (
                         <div>
-                            I have received {currentWaveCount} waves. I'm really
-                            popular.
+                            I have received {currentWaveCount}{' '}
+                            {currentWaveCount === 1 ? 'wave' : 'waves'}. I'm
+                            really popular.
                         </div>
                     )}
 
                     {!loading && !currentAccount && (
                         <div>Connect your Ethereum wallet and wave at me!</div>
-                    )}
-
-                    {loading && (
-                        <div>
-                            <CircularProgress className="loading-spinner" />
-                        </div>
                     )}
                 </div>
 
@@ -172,26 +208,40 @@ export default function App() {
 
                 <div className="transaction-container">
                     {pendingTransaction && (
-                        <span>
+                        <div>
                             Your wave is processing:
                             <a
                                 href={getEtherscanURL(pendingTransaction)}
                                 target="_blank">
                                 View on Etherscan
                             </a>
-                        </span>
+                        </div>
                     )}
 
-                    {lastTransaction && (
-                        <span>
-                            Your wave has been processed:
-                            <a
-                                href={getEtherscanURL(lastTransaction)}
-                                target="_blank">
-                                View on Etherscan
-                            </a>
-                        </span>
+                    {loading && (
+                        <div className="loading-container">
+                            <CircularProgress />
+                        </div>
                     )}
+
+                    <h3>All Completed Waves</h3>
+                    {allWaves.map((wave, index) => {
+                        return (
+                            <Card key={index} className="wave-transaction">
+                                <CardContent>
+                                    <Typography>
+                                        <b>Address:</b> {wave.address}
+                                    </Typography>
+                                    <Typography>
+                                        <b>Time:</b> {wave.timestamp.toString()}
+                                    </Typography>
+                                    <Typography>
+                                        <b>Message:</b> {wave.message}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
                 </div>
             </div>
         </div>
