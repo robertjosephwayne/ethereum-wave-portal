@@ -224,7 +224,8 @@ export default function App() {
                         </div>
                     )}
 
-                    <h3>All Completed Waves</h3>
+                    {!!allWaves.length && <h3>All Completed Waves</h3>}
+
                     {allWaves.map((wave, index) => {
                         return (
                             <Card key={index} className="wave-transaction">
