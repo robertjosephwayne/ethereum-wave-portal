@@ -175,6 +175,7 @@ export default function App() {
                     message: message,
                 },
             ]);
+            refreshCurrentWaveCount();
         };
 
         if (window.ethereum) {
