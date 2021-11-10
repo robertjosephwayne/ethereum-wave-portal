@@ -212,7 +212,7 @@ export default function App() {
                 <div className="header">👋 Hey there!</div>
 
                 <div className="bio">
-                    <div>Welcome to my wave portal.</div>
+                    <div>Welcome to Robert's wave portal.</div>
                 </div>
 
                 <div className="wave-count-container">
