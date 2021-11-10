@@ -203,6 +203,7 @@ export default function App() {
 
     useEffect(() => {
         refreshCurrentWaveCount();
+        getAllWaves();
     }, [currentAccount]);
 
     return (
