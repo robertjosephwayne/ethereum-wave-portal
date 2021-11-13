@@ -1,15 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
+
+import {
+    Box,
+    Button,
+    Container,
+    CssBaseline,
+    Grid,
+    Link,
+    Paper,
+    Typography,
+    styled,
+} from '@mui/material';
+
+import { LoadingButton } from '@mui/lab';
+
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
 import { ethers } from 'ethers';
 import abi from './utils/WavePortal.json';
 
-import {
-    Button,
-    Card,
-    CardContent,
-    CircularProgress,
-    Typography,
-} from '@mui/material';
+const theme = createTheme({
+    palette: {
+        mode: 'dark',
+        primary: {
+            main: '#BB86FC'
+        },
+        secondary: {
+            main: '#03DAC6'
+        }
+    },
+});
+
+const Item = styled(Paper)(({ theme }) => ({
+    ...theme.typography.body2,
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+}));
 
 export default function App() {
     const [allWaves, setAllWaves] = useState([]);
@@ -203,84 +231,106 @@ export default function App() {
 
     useEffect(() => {
         refreshCurrentWaveCount();
+        getAllWaves();
     }, [currentAccount]);
 
     return (
-        <div className="main-container">
-            <div className="data-container">
-                <div className="header">👋 Hey there!</div>
-
-                <div className="bio">
-                    <div>Welcome to my wave portal.</div>
-                </div>
-
-                <div className="wave-count-container">
-                    {!loading && !!currentWaveCount && (
-                        <div>
+        <ThemeProvider theme={theme}>
+            <Container component="main">
+                <CssBaseline />
+                <Box
+                    sx={{
+                        marginTop: 10,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                    }}
+                    textAlign="center">
+                    <Typography component="h1" variant="h4">
+                        Welcome to Robert's wave portal.
+                    </Typography>
+                    {!currentAccount && (
+                        <Typography component="h1" variant="h6" sx={{ mt: 5 }}>
+                            Connect your wallet to enter.
+                        </Typography>
+                    )}
+                    {!!currentWaveCount && !pendingTransaction && (
+                        <Typography component="h1" variant="h6" sx={{ mt: 5 }}>
                             I have received {currentWaveCount}{' '}
                             {currentWaveCount === 1 ? 'wave' : 'waves'}. I'm
                             really popular.
-                        </div>
+                        </Typography>
                     )}
-
-                    {!loading && !currentAccount && (
-                        <div>Connect your Ethereum wallet and wave at me!</div>
-                    )}
-                </div>
-
-                {!loading && (
-                    <div className="button-container">
-                        {currentAccount && (
-                            <Button onClick={wave}>Wave at Me</Button>
-                        )}
-
-                        {!currentAccount && (
-                            <Button onClick={connectWallet}>
-                                Connect Wallet
-                            </Button>
-                        )}
-                    </div>
-                )}
-
-                <div className="transaction-container">
                     {pendingTransaction && (
-                        <div>
-                            Your wave is processing:
-                            <a
+                        <Typography component="h1" variant="h6" sx={{ mt: 5 }}>
+                            Your wave is processing:{' '}
+                            <Link
                                 href={getEtherscanURL(pendingTransaction)}
                                 target="_blank">
                                 View on Etherscan
-                            </a>
-                        </div>
+                            </Link>
+                        </Typography>
                     )}
+                    <Box noValidate sx={{ my: 5 }}>
+                        {!currentAccount && (
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                onClick={connectWallet}
+                                size="large"
+                                color="secondary">
+                                Connect
+                            </Button>
+                        )}
+                        {currentAccount && (
+                            <LoadingButton
+                                loading={loading}
+                                type="submit"
+                                fullWidth
+                                variant="contained"
+                                onClick={wave}
+                                size="large"
+                                color="secondary">
+                                Wave
+                            </LoadingButton>
+                        )}
+                    </Box>
+                </Box>
 
-                    {loading && (
-                        <div className="loading-container">
-                            <CircularProgress />
-                        </div>
-                    )}
+                {!!allWaves.length && (
+                    <Box justifyContent="center" textAlign="center">
+                        <Typography component="h1" variant="h6">
+                            All Completed Waves
+                        </Typography>
+                    </Box>
+                )}
 
-                    {!!allWaves.length && <h3>All Completed Waves</h3>}
-
-                    {allWaves.map((wave, index) => {
-                        return (
-                            <Card key={index} className="wave-transaction">
-                                <CardContent>
-                                    <Typography>
-                                        <b>Address:</b> {wave.address}
-                                    </Typography>
-                                    <Typography>
-                                        <b>Time:</b> {wave.timestamp.toString()}
-                                    </Typography>
-                                    <Typography>
-                                        <b>Message:</b> {wave.message}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </div>
-            </div>
-        </div>
+                <Box
+                    justifyContent="center"
+                    margin="auto"
+                    sx={{ pt: 2, pb: 2 }}>
+                    <Grid container rowSpacing={2}>
+                        {allWaves.map((wave, index) => {
+                            return (
+                                <Grid item key={index} xs={12}>
+                                    <Item>
+                                        <Typography>
+                                            <b>Address:</b> {wave.address}
+                                        </Typography>
+                                        <Typography>
+                                            <b>Time:</b>{' '}
+                                            {wave.timestamp.toString()}
+                                        </Typography>
+                                        <Typography>
+                                            <b>Message:</b> {wave.message}
+                                        </Typography>
+                                    </Item>
+                                </Grid>
+                            );
+                        })}
+                    </Grid>
+                </Box>
+            </Container>
+        </ThemeProvider>
     );
 }
