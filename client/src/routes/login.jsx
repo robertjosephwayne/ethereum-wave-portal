@@ -8,7 +8,6 @@ import {
     CssBaseline,
     Paper,
     Typography,
-    styled,
 } from '@mui/material';
 
 import { createTheme, ThemeProvider } from '@mui/material/styles';

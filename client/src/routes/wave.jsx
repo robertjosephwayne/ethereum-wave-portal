@@ -33,8 +33,7 @@ const theme = createTheme({
 
 const Item = styled(Paper)(({ theme }) => ({
     ...theme.typography.body2,
-    padding: theme.spacing(1),
-    textAlign: 'center',
+    padding: theme.spacing(2),
     color: theme.palette.text.secondary,
 }));
 
@@ -161,6 +160,7 @@ export default function App() {
                         message: wave.message,
                     });
                 });
+                wavesCleaned.sort((waveA, waveB) => waveB.timestamp - waveA.timestamp);
 
                 setAllWaves(wavesCleaned);
             } else {
@@ -177,12 +177,12 @@ export default function App() {
         const onNewWave = (from, timestamp, message) => {
             console.log('NewWave', from, timestamp, message);
             setAllWaves((prevState) => [
-                ...prevState,
                 {
                     address: from,
                     timestamp: new Date(timestamp * 1000),
                     message: message,
                 },
+                ...prevState,
             ]);
         };
 
@@ -272,23 +272,24 @@ export default function App() {
                 )}
 
                 <Box
-                    justifyContent="center"
                     margin="auto"
-                    sx={{ pt: 2, pb: 2 }}>
+                    sx={{ pt: 2, pb: 2 }}
+                    maxWidth="600px">
                     <Grid container rowSpacing={2}>
                         {allWaves.map((wave, index) => {
                             return (
-                                <Grid item key={index} xs={12}>
+                                <Grid item key={index} xs={12} textAlign="left">
                                     <Item>
+                                        <Typography sx={{ pb: 1 }}>
+                                            <b>
+                                                {wave.timestamp.toLocaleString()}
+                                            </b>
+                                        </Typography>
+                                        <Typography sx={{ pb: 1 }}>
+                                            <b>Message:</b> {wave.message}
+                                        </Typography>
                                         <Typography>
                                             <b>Address:</b> {wave.address}
-                                        </Typography>
-                                        <Typography>
-                                            <b>Time:</b>{' '}
-                                            {wave.timestamp.toString()}
-                                        </Typography>
-                                        <Typography>
-                                            <b>Message:</b> {wave.message}
                                         </Typography>
                                     </Item>
                                 </Grid>
