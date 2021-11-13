@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Redirect, Routes, Route } from 'react-router-dom';
 
 import './index.css';
 
@@ -12,7 +12,7 @@ ReactDOM.render(
     <BrowserRouter>
         <Routes>
             <Route path="/wave" element={<Wave />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Login />} />
         </Routes>
     </BrowserRouter>,
     rootElement,

@@ -67,7 +67,7 @@ export default function App() {
                 setCurrentAccount(account);
                 getAllWaves();
             } else {
-                navigate('/login');
+                navigate('/');
                 console.log('No authorized account found.');
             }
         } catch (error) {
