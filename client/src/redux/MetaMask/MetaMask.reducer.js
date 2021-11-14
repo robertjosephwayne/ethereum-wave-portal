@@ -6,10 +6,25 @@ const initialState = {
 };
 
 const reducer = createReducer(initialState, (builder) => {
+    builder.addCase(MetaMaskActions.connectAccountInit, (state, action) => {
+        return {
+            ...state,
+            loadingAccount: true,
+        };
+    });
+
     builder.addCase(MetaMaskActions.connectAccountSuccess, (state, action) => {
         return {
             ...state,
             currentAccount: action.payload.account,
+            loadingAccount: false,
+        };
+    });
+
+    builder.addCase(MetaMaskActions.getUsernameInit, (state, action) => {
+        return {
+            ...state,
+            loadingUsername: true,
         };
     });
 
@@ -17,6 +32,7 @@ const reducer = createReducer(initialState, (builder) => {
         return {
             ...state,
             username: action.payload.username,
+            loadingUsername: false,
         };
     });
 });

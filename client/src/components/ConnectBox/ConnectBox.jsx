@@ -19,10 +19,15 @@ const theme = createTheme({
     palette: {},
 });
 
-function ConnectBox({ connectAccountSuccess, currentAccount }) {
+function ConnectBox({
+    connectAccountInit,
+    connectAccountSuccess,
+    currentAccount,
+}) {
     const navigate = useNavigate();
 
     const checkIfWalletIsConnected = async () => {
+        connectAccountInit();
         try {
             const { ethereum } = window;
 
@@ -49,6 +54,7 @@ function ConnectBox({ connectAccountSuccess, currentAccount }) {
     };
 
     const connectWallet = async () => {
+        connectAccountInit();
         try {
             const { ethereum } = window;
 
@@ -101,6 +107,8 @@ function ConnectBox({ connectAccountSuccess, currentAccount }) {
 
 const mapDispatchToProps = (dispatch) => {
     return {
+        connectAccountInit: () =>
+            dispatch(MetaMaskActions.connectAccountInit()),
         connectAccountSuccess: (account) =>
             dispatch(MetaMaskActions.connectAccountSuccess({ account })),
     };
@@ -109,6 +117,7 @@ const mapDispatchToProps = (dispatch) => {
 const mapStateToProps = (state) => {
     return {
         currentAccount: state.metaMask.currentAccount,
+        loadingAccount: state.metaMask.loadingAccount,
     };
 };
 

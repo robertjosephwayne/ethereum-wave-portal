@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import {
     Box,
+    CircularProgress,
     Container,
     CssBaseline,
     Grid,
@@ -35,9 +36,13 @@ const Item = styled(Paper)(({ theme }) => ({
 
 function Wave({
     allWaves,
+    connectAccountInit,
     connectAccountSuccess,
     currentAccount,
+    getUsernameInit,
     getUsernameSuccess,
+    loadingAccount,
+    loadingUsername,
     newWaveReceived,
     username,
     waveCount,
@@ -51,6 +56,7 @@ function Wave({
     const contractABI = abi.abi;
 
     const checkIfWalletIsConnected = async () => {
+        connectAccountInit();
         try {
             const { ethereum } = window;
 
@@ -102,7 +108,7 @@ function Wave({
 
                 await waveTxn.wait();
                 setPendingTransaction('');
-                refreshCurrentWaveCount();
+                await refreshCurrentWaveCount();
                 setLoading(false);
             } else {
                 console.log("Ethereum object doesn't exist!");
@@ -218,6 +224,7 @@ function Wave({
     };
 
     const getUsername = async () => {
+        getUsernameInit();
         try {
             const { ethereum } = window;
             if (ethereum) {
@@ -278,122 +285,151 @@ function Wave({
 
     useEffect(() => {
         checkIfWalletIsConnected();
-        refreshCurrentWaveCount();
         getUsername();
+        refreshCurrentWaveCount();
     }, []);
 
     useEffect(() => {
+        getUsername();
         refreshCurrentWaveCount();
         getAllWaves();
-        getUsername();
     }, [currentAccount]);
 
     return (
         <ThemeProvider theme={theme}>
-            <Container component="main">
-                <CssBaseline />
-                <Box
-                    sx={{
-                        marginTop: 10,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                    }}
-                    textAlign="center">
-                    {username && (
-                        <Typography component="h1" variant="h4">
-                            Hi {username}! Welcome back.
-                        </Typography>
-                    )}
-                    <Typography>
-                        <Link
-                            component="button"
-                            variant="body2"
-                            onClick={updateUsername}>
-                            Update username
-                        </Link>
-                    </Typography>
-                    {!!waveCount && !pendingTransaction && (
-                        <Typography component="h1" variant="h6" sx={{ mt: 5 }}>
-                            I have received {waveCount}{' '}
-                            {waveCount === 1 ? 'wave' : 'waves'}. I'm really
-                            popular.
-                        </Typography>
-                    )}
-                    {pendingTransaction && (
-                        <Typography component="h1" variant="h6" sx={{ mt: 5 }}>
-                            Your wave is processing:{' '}
+            {!loadingAccount && !loadingUsername && waveCount && (
+                <Container component="main">
+                    <CssBaseline />
+                    <Box
+                        sx={{
+                            marginTop: 10,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                        }}
+                        textAlign="center">
+                        {!username && (
+                            <Typography component="h1" variant="h4">
+                                Welcome to Robert's wave portal.
+                            </Typography>
+                        )}
+                        {username && (
+                            <Typography component="h1" variant="h4">
+                                Hi {username}! Welcome back.
+                            </Typography>
+                        )}
+                        <Typography>
                             <Link
-                                href={getEtherscanURL(pendingTransaction)}
-                                target="_blank">
-                                View on Etherscan
+                                component="button"
+                                variant="body2"
+                                onClick={updateUsername}>
+                                Update username
                             </Link>
                         </Typography>
-                    )}
-                    <Box noValidate sx={{ my: 5 }}>
-                        {currentAccount && (
-                            <LoadingButton
-                                loading={loading}
-                                type="submit"
-                                fullWidth
-                                variant="contained"
-                                onClick={wave}
-                                size="large"
-                                color="secondary">
-                                Wave
-                            </LoadingButton>
+                        {!!waveCount && !pendingTransaction && (
+                            <Typography
+                                component="h1"
+                                variant="h6"
+                                sx={{ mt: 5 }}>
+                                I have received {waveCount}{' '}
+                                {waveCount === 1 ? 'wave' : 'waves'}. I'm really
+                                popular.
+                            </Typography>
                         )}
+                        {pendingTransaction && (
+                            <Typography
+                                component="h1"
+                                variant="h6"
+                                sx={{ mt: 5 }}>
+                                Your wave is processing:{' '}
+                                <Link
+                                    href={getEtherscanURL(pendingTransaction)}
+                                    target="_blank">
+                                    View on Etherscan
+                                </Link>
+                            </Typography>
+                        )}
+                        <Box noValidate sx={{ my: 5 }}>
+                            {currentAccount && (
+                                <LoadingButton
+                                    loading={loading}
+                                    type="submit"
+                                    fullWidth
+                                    variant="contained"
+                                    onClick={wave}
+                                    size="large"
+                                    color="secondary">
+                                    Wave
+                                </LoadingButton>
+                            )}
+                        </Box>
                     </Box>
-                </Box>
 
-                {!!allWaves?.length && (
-                    <Box justifyContent="center" textAlign="center">
-                        <Typography component="h1" variant="h6">
-                            All Completed Waves
-                        </Typography>
+                    {!!allWaves?.length && (
+                        <Box justifyContent="center" textAlign="center">
+                            <Typography component="h1" variant="h6">
+                                All Completed Waves
+                            </Typography>
+                        </Box>
+                    )}
+
+                    <Box margin="auto" sx={{ pt: 2, pb: 2 }} maxWidth="600px">
+                        <Grid container rowSpacing={2}>
+                            {allWaves?.map((wave, index) => {
+                                return (
+                                    <Grid
+                                        item
+                                        key={index}
+                                        xs={12}
+                                        textAlign="left">
+                                        <Item>
+                                            <Typography sx={{ pb: 1 }}>
+                                                <b>
+                                                    {wave.timestamp.toLocaleString()}
+                                                </b>
+                                            </Typography>
+                                            <Typography sx={{ pb: 1 }}>
+                                                <b>Message:</b> {wave.message}
+                                            </Typography>
+                                            <Typography>
+                                                <b>Address:</b> {wave.address}
+                                            </Typography>
+                                        </Item>
+                                    </Grid>
+                                );
+                            })}
+                        </Grid>
                     </Box>
-                )}
+                </Container>
+            )}
 
-                <Box margin="auto" sx={{ pt: 2, pb: 2 }} maxWidth="600px">
-                    <Grid container rowSpacing={2}>
-                        {allWaves?.map((wave, index) => {
-                            return (
-                                <Grid item key={index} xs={12} textAlign="left">
-                                    <Item>
-                                        <Typography sx={{ pb: 1 }}>
-                                            <b>
-                                                {wave.timestamp.toLocaleString()}
-                                            </b>
-                                        </Typography>
-                                        <Typography sx={{ pb: 1 }}>
-                                            <b>Message:</b> {wave.message}
-                                        </Typography>
-                                        <Typography>
-                                            <b>Address:</b> {wave.address}
-                                        </Typography>
-                                    </Item>
-                                </Grid>
-                            );
-                        })}
-                    </Grid>
-                </Box>
-            </Container>
+            {(loadingAccount || loadingUsername || !waveCount) && (
+                <Container component="main">
+                    <CssBaseline />
+                    <Box display="flex" justifyContent="center" sx={{ mt: 10 }}>
+                        <CircularProgress />
+                    </Box>
+                </Container>
+            )}
         </ThemeProvider>
     );
 }
 
 const mapDispatchToProps = (dispatch) => {
     return {
+        connectAccountInit: () =>
+            dispatch(MetaMaskActions.connectAccountInit()),
         connectAccountSuccess: (account) =>
             dispatch(MetaMaskActions.connectAccountSuccess({ account })),
+        getUsernameInit: () => dispatch(MetaMaskActions.getUsernameInit()),
+        getUsernameSuccess: (username) =>
+            dispatch(MetaMaskActions.getUsernameSuccess({ username })),
         newWaveReceived: (newWave) =>
             dispatch(WavesActions.newWaveReceived({ newWave })),
         waveCountUpdated: (updatedWaveCount) =>
             dispatch(WavesActions.waveCountUpdated({ updatedWaveCount })),
         wavesUpdated: (allWaves) =>
             dispatch(WavesActions.wavesUpdated({ allWaves })),
-        getUsernameSuccess: (username) =>
-            dispatch(MetaMaskActions.getUsernameSuccess({ username })),
     };
 };
 
@@ -401,6 +437,8 @@ const mapStateToProps = (state) => {
     return {
         allWaves: state.waves.allWaves,
         currentAccount: state.metaMask.currentAccount,
+        loadingAccount: state.metaMask.loadingAccount,
+        loadingUsername: state.metaMask.loadingUsername,
         username: state.metaMask.username,
         waveCount: state.waves.waveCount,
     };
