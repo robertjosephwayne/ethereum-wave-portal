@@ -3,7 +3,7 @@ import * as WavesActions from './Waves.actions';
 
 const initialState = {
     allWaves: [],
-    waveCount: 1,
+    waveCount: 0,
 };
 
 const reducer = createReducer(initialState, (builder) => {
