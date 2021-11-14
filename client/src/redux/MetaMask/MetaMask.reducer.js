@@ -4,6 +4,7 @@ import * as MetaMaskActions from './MetaMask.actions';
 const initialState = {
     currentAccount: '',
     loadingAccount: false,
+    users: {},
 };
 
 const reducer = createReducer(initialState, (builder) => {
@@ -42,6 +43,18 @@ const reducer = createReducer(initialState, (builder) => {
             ...state,
             username: action.payload.username,
             loadingUsername: false,
+        };
+    });
+
+    builder.addCase(MetaMaskActions.newUser, (state, action) => {
+        const { address, username } = action.payload.user;
+
+        return {
+            ...state,
+            users: {
+                ...state.users,
+                [address]: username,
+            },
         };
     });
 });

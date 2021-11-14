@@ -43,8 +43,10 @@ function Wave({
     getUsernameSuccess,
     loadingAccount,
     loadingUsername,
+    newUser,
     newWaveReceived,
     username,
+    users,
     waveCount,
     waveCountUpdated,
     wavesUpdated,
@@ -162,13 +164,14 @@ function Wave({
                 const waves = await wavePortalContract.getAllWaves();
 
                 let wavesCleaned = [];
-                waves.forEach((wave) => {
+                for (const wave of waves) {
                     wavesCleaned.push({
                         address: wave.waver,
-                        timestamp: new Date(wave.timestamp * 1000),
                         message: wave.message,
+                        timestamp: new Date(wave.timestamp * 1000),
+                        username: await getWaverUsername(wave.waver),
                     });
-                });
+                }
                 wavesCleaned.sort(
                     (waveA, waveB) => waveB.timestamp - waveA.timestamp,
                 );
@@ -199,7 +202,10 @@ function Wave({
                     username = prompt(
                         'Enter a new username with 20 characters or less. Only letters and numbers are allowed.',
                     );
+                    if (!username) return;
                 }
+
+                if (!username) return;
 
                 await wavePortalContract.setUsername(username);
                 alert(
@@ -250,15 +256,43 @@ function Wave({
         }
     };
 
+    const getWaverUsername = async (address) => {
+        let username = users[address];
+        if (username) return username;
+
+        try {
+            const { ethereum } = window;
+            if (ethereum) {
+                const provider = new ethers.providers.Web3Provider(ethereum);
+                const signer = provider.getSigner();
+                const wavePortalContract = new ethers.Contract(
+                    contractAddress,
+                    contractABI,
+                    signer,
+                );
+
+                return wavePortalContract.username(address);
+            } else {
+                console.log("Ethereum object doesn't exist!");
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     useEffect(() => {
         let wavePortalContract;
 
-        const onNewWave = (from, timestamp, message) => {
+        const onNewWave = async (from, timestamp, message) => {
             console.log('NewWave', from, timestamp, message);
+
+            const username = await getWaverUsername(from);
+
             const newWave = {
                 address: from,
-                timestamp: new Date(timestamp * 1000),
                 message: message,
+                timestamp: new Date(timestamp * 1000),
+                username,
             };
             newWaveReceived(newWave);
             refreshCurrentWaveCount();
@@ -389,6 +423,9 @@ function Wave({
                                                 </b>
                                             </Typography>
                                             <Typography sx={{ pb: 1 }}>
+                                                <b>Username:</b> {wave.username}
+                                            </Typography>
+                                            <Typography sx={{ pb: 1 }}>
                                                 <b>Message:</b> {wave.message}
                                             </Typography>
                                             <Typography>
@@ -424,6 +461,7 @@ const mapDispatchToProps = (dispatch) => {
         getUsernameInit: () => dispatch(MetaMaskActions.getUsernameInit()),
         getUsernameSuccess: (username) =>
             dispatch(MetaMaskActions.getUsernameSuccess({ username })),
+        newUser: (user) => dispatch(MetaMaskActions.newUser({ user })),
         newWaveReceived: (newWave) =>
             dispatch(WavesActions.newWaveReceived({ newWave })),
         waveCountUpdated: (updatedWaveCount) =>
@@ -440,6 +478,7 @@ const mapStateToProps = (state) => {
         loadingAccount: state.metaMask.loadingAccount,
         loadingUsername: state.metaMask.loadingUsername,
         username: state.metaMask.username,
+        users: state.metaMask.users,
         waveCount: state.waves.waveCount,
     };
 };
