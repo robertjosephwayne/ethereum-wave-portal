@@ -30,24 +30,10 @@ contract WavePortal {
         lastWavedAt[msg.sender] = block.timestamp;
 
         totalWaves += 1;
-        // msg.sender is the wallet address of the person who called this function.
+        
         console.log("%s has waved!", msg.sender);
 
         waves.push(Wave(msg.sender, _message, block.timestamp));
-
-        seed = (block.timestamp + block.difficulty + seed) % 100;
-        console.log("Random number generated: ", seed);
-
-        if (seed <= 50) {
-            console.log("%s won!", msg.sender);
-            uint256 prizeAmount = 0.0001 ether;
-            require(
-                prizeAmount <= address(this).balance,
-                "Trying to withdraw more money than the contract has."
-            );
-            // (bool success, ) = (msg.sender).call{value: prizeAmount}("");
-            // require(success, "Failed to withdraw money from contract.");
-        }
 
         emit NewWave(msg.sender, block.timestamp, _message);
     }
