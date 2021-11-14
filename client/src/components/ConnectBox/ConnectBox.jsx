@@ -53,7 +53,7 @@ function ConnectBox({ connectAccountSuccess, currentAccount }) {
             const { ethereum } = window;
 
             if (!ethereum) {
-                alert('Get MetaMask!');
+                alert('MetaMask is required. Please download MetaMask');
                 return;
             }
 
