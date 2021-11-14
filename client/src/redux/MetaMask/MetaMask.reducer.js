@@ -3,6 +3,7 @@ import * as MetaMaskActions from './MetaMask.actions';
 
 const initialState = {
     currentAccount: '',
+    loadingAccount: false,
 };
 
 const reducer = createReducer(initialState, (builder) => {
@@ -17,6 +18,14 @@ const reducer = createReducer(initialState, (builder) => {
         return {
             ...state,
             currentAccount: action.payload.account,
+            loadingAccount: false,
+        };
+    });
+
+    builder.addCase(MetaMaskActions.connectAccountFailure, (state, action) => {
+        return {
+            ...state,
+            currentAccount: '',
             loadingAccount: false,
         };
     });

@@ -7,6 +7,7 @@ import * as MetaMaskActions from '../../redux/MetaMask/MetaMask.actions';
 import {
     Box,
     Button,
+    CircularProgress,
     Container,
     CssBaseline,
     Paper,
@@ -22,7 +23,9 @@ const theme = createTheme({
 function ConnectBox({
     connectAccountInit,
     connectAccountSuccess,
+    connectAccountFailure,
     currentAccount,
+    loadingAccount,
 }) {
     const navigate = useNavigate();
 
@@ -46,9 +49,11 @@ function ConnectBox({
                 connectAccountSuccess(account);
                 navigate('/wave');
             } else {
+                connectAccountFailure();
                 console.log('No authorized account found.');
             }
         } catch (error) {
+            connectAccountFailure();
             console.log(error);
         }
     };
@@ -83,25 +88,35 @@ function ConnectBox({
     }, []);
 
     return (
-        <Paper sx={{ paddingX: 6, paddingY: 4, margin: 5 }}>
-            {!currentAccount && (
-                <Typography component="h1" variant="h6">
-                    Connect your wallet to enter.
-                </Typography>
+        <>
+            {!loadingAccount && !currentAccount && (
+                <Paper sx={{ paddingX: 6, paddingY: 4, margin: 5 }}>
+                    <Typography component="h1" variant="h6">
+                        Connect your wallet to enter.
+                    </Typography>
+
+                    <Box noValidate sx={{ my: 2 }}>
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            onClick={connectWallet}
+                            size="large"
+                            color="secondary">
+                            Connect
+                        </Button>
+                    </Box>
+                </Paper>
             )}
-            <Box noValidate sx={{ my: 2 }}>
-                {!currentAccount && (
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        onClick={connectWallet}
-                        size="large"
-                        color="secondary">
-                        Connect
-                    </Button>
-                )}
-            </Box>
-        </Paper>
+
+            {loadingAccount && !currentAccount && (
+                <Container component="main">
+                    <CssBaseline />
+                    <Box display="flex" justifyContent="center">
+                        <CircularProgress />
+                    </Box>
+                </Container>
+            )}
+        </>
     );
 }
 
@@ -111,6 +126,8 @@ const mapDispatchToProps = (dispatch) => {
             dispatch(MetaMaskActions.connectAccountInit()),
         connectAccountSuccess: (account) =>
             dispatch(MetaMaskActions.connectAccountSuccess({ account })),
+        connectAccountFailure: () =>
+            dispatch(MetaMaskActions.connectAccountFailure()),
     };
 };
 

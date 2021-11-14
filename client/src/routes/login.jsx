@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -18,7 +19,7 @@ const theme = createTheme({
     palette: {},
 });
 
-export default function App() {
+function Login({ loadingAccount }) {
     return (
         <ThemeProvider theme={theme}>
             <Container component="main">
@@ -31,12 +32,23 @@ export default function App() {
                         alignItems: 'center',
                     }}
                     textAlign="center">
-                    <Typography component="h1" variant="h4">
-                        Welcome to Robert's wave portal.
-                    </Typography>
+                    {!loadingAccount && (
+                        <Typography component="h1" variant="h4">
+                            Welcome to Robert's wave portal.
+                        </Typography>
+                    )}
                     <ConnectBox />
                 </Box>
             </Container>
         </ThemeProvider>
     );
 }
+
+const mapStateToProps = (state) => {
+    return {
+        currentAccount: state.metaMask.currentAccount,
+        loadingAccount: state.metaMask.loadingAccount,
+    };
+};
+
+export default connect(mapStateToProps)(Login);
