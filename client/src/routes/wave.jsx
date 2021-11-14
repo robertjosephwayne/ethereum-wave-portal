@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -16,19 +17,14 @@ import { LoadingButton } from '@mui/lab';
 
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+import * as MetaMaskActions from '../redux/MetaMask/MetaMask.actions';
+import * as WavesActions from '../redux/Waves/Waves.actions';
+
 import { ethers } from 'ethers';
 import abi from '../utils/WavePortal.json';
 
 const theme = createTheme({
-    palette: {
-        mode: 'dark',
-        primary: {
-            main: '#BB86FC',
-        },
-        secondary: {
-            main: '#03DAC6',
-        },
-    },
+    palette: {},
 });
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -37,11 +33,16 @@ const Item = styled(Paper)(({ theme }) => ({
     color: theme.palette.text.secondary,
 }));
 
-export default function App() {
+function Wave({
+    currentAccount,
+    waveCount,
+    allWaves,
+    connectAccountSuccess,
+    newWaveReceived,
+    waveCountUpdated,
+    wavesUpdated,
+}) {
     const navigate = useNavigate();
-    const [allWaves, setAllWaves] = useState([]);
-    const [currentWaveCount, setCurrentWaveCount] = useState(0);
-    const [currentAccount, setCurrentAccount] = useState('');
     const [loading, setLoading] = useState(false);
     const [pendingTransaction, setPendingTransaction] = useState('');
     const contractAddress = '0x9b75006d9B06ccaaaFc706AD3490f45d2b99e594';
@@ -60,10 +61,10 @@ export default function App() {
 
             const accounts = await ethereum.request({ method: 'eth_accounts' });
 
-            if (accounts.length !== 0) {
+            if (accounts?.length) {
                 const account = accounts[0];
                 console.log('Found an authorized account: ', account);
-                setCurrentAccount(account);
+                connectAccountSuccess(account);
                 getAllWaves();
             } else {
                 navigate('/');
@@ -123,7 +124,7 @@ export default function App() {
                 );
 
                 const count = await wavePortalContract.getTotalWaves();
-                setCurrentWaveCount(count.toNumber());
+                waveCountUpdated(count.toNumber());
 
                 console.log('Retrieved total wave count: ', count.toNumber());
             } else {
@@ -160,9 +161,11 @@ export default function App() {
                         message: wave.message,
                     });
                 });
-                wavesCleaned.sort((waveA, waveB) => waveB.timestamp - waveA.timestamp);
+                wavesCleaned.sort(
+                    (waveA, waveB) => waveB.timestamp - waveA.timestamp,
+                );
 
-                setAllWaves(wavesCleaned);
+                wavesUpdated(wavesCleaned);
             } else {
                 console.log("Ethereum object doesn't exist!");
             }
@@ -176,14 +179,12 @@ export default function App() {
 
         const onNewWave = (from, timestamp, message) => {
             console.log('NewWave', from, timestamp, message);
-            setAllWaves((prevState) => [
-                {
-                    address: from,
-                    timestamp: new Date(timestamp * 1000),
-                    message: message,
-                },
-                ...prevState,
-            ]);
+            const newWave = {
+                address: from,
+                timestamp: new Date(timestamp * 1000),
+                message: message,
+            };
+            newWaveReceived(newWave);
             refreshCurrentWaveCount();
         };
 
@@ -231,11 +232,11 @@ export default function App() {
                     <Typography component="h1" variant="h4">
                         Welcome to Robert's wave portal.
                     </Typography>
-                    {!!currentWaveCount && !pendingTransaction && (
+                    {!!waveCount && !pendingTransaction && (
                         <Typography component="h1" variant="h6" sx={{ mt: 5 }}>
-                            I have received {currentWaveCount}{' '}
-                            {currentWaveCount === 1 ? 'wave' : 'waves'}. I'm
-                            really popular.
+                            I have received {waveCount}{' '}
+                            {waveCount === 1 ? 'wave' : 'waves'}. I'm really
+                            popular.
                         </Typography>
                     )}
                     {pendingTransaction && (
@@ -264,7 +265,7 @@ export default function App() {
                     </Box>
                 </Box>
 
-                {!!allWaves.length && (
+                {!!allWaves?.length && (
                     <Box justifyContent="center" textAlign="center">
                         <Typography component="h1" variant="h6">
                             All Completed Waves
@@ -272,12 +273,9 @@ export default function App() {
                     </Box>
                 )}
 
-                <Box
-                    margin="auto"
-                    sx={{ pt: 2, pb: 2 }}
-                    maxWidth="600px">
+                <Box margin="auto" sx={{ pt: 2, pb: 2 }} maxWidth="600px">
                     <Grid container rowSpacing={2}>
-                        {allWaves.map((wave, index) => {
+                        {allWaves?.map((wave, index) => {
                             return (
                                 <Grid item key={index} xs={12} textAlign="left">
                                     <Item>
@@ -302,3 +300,26 @@ export default function App() {
         </ThemeProvider>
     );
 }
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        connectAccountSuccess: (account) =>
+            dispatch(MetaMaskActions.connectAccountSuccess({ account })),
+        newWaveReceived: (newWave) =>
+            dispatch(WavesActions.newWaveReceived({ newWave })),
+        waveCountUpdated: (updatedWaveCount) =>
+            dispatch(WavesActions.waveCountUpdated({ updatedWaveCount })),
+        wavesUpdated: (allWaves) =>
+            dispatch(WavesActions.wavesUpdated({ allWaves })),
+    };
+};
+
+const mapStateToProps = (state) => {
+    return {
+        currentAccount: state.metaMask.currentAccount,
+        allWaves: state.waves.allWaves,
+        waveCount: state.waves.waveCount,
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Wave);
