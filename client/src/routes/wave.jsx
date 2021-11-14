@@ -34,18 +34,20 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 function Wave({
-    currentAccount,
-    waveCount,
     allWaves,
     connectAccountSuccess,
+    currentAccount,
+    getUsernameSuccess,
     newWaveReceived,
+    username,
+    waveCount,
     waveCountUpdated,
     wavesUpdated,
 }) {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [pendingTransaction, setPendingTransaction] = useState('');
-    const contractAddress = '0x9b75006d9B06ccaaaFc706AD3490f45d2b99e594';
+    const contractAddress = '0xA6DeAFDD2D70260402cDb502cA899478c14F7129';
     const contractABI = abi.abi;
 
     const checkIfWalletIsConnected = async () => {
@@ -174,6 +176,73 @@ function Wave({
         }
     };
 
+    const updateUsername = async () => {
+        try {
+            const { ethereum } = window;
+            if (ethereum) {
+                const provider = new ethers.providers.Web3Provider(ethereum);
+                const signer = provider.getSigner();
+                const wavePortalContract = new ethers.Contract(
+                    contractAddress,
+                    contractABI,
+                    signer,
+                );
+
+                let username;
+                while (!isValidUsername(username)) {
+                    username = prompt(
+                        'Enter a new username with 20 characters or less. Only letters and numbers are allowed.',
+                    );
+                }
+
+                await wavePortalContract.setUsername(username);
+                alert(
+                    'Your request has been submitted. Your username will be updated once the transaction has been processed.',
+                );
+            } else {
+                console.log("Ethereum object doesn't exist!");
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const isValidUsername = (username) => {
+        if (!username) return false;
+        if (username.length > 20) return false;
+
+        const invalidRegex = /[^A-Za-z0-9]/;
+        if (username.match(invalidRegex)) return false;
+
+        return true;
+    };
+
+    const getUsername = async () => {
+        try {
+            const { ethereum } = window;
+            if (ethereum) {
+                const provider = new ethers.providers.Web3Provider(ethereum);
+                const signer = provider.getSigner();
+                const wavePortalContract = new ethers.Contract(
+                    contractAddress,
+                    contractABI,
+                    signer,
+                );
+
+                const username = await wavePortalContract.username(
+                    signer.getAddress(),
+                );
+                if (username) {
+                    getUsernameSuccess(username);
+                }
+            } else {
+                console.log("Ethereum object doesn't exist!");
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     useEffect(() => {
         let wavePortalContract;
 
@@ -210,11 +279,13 @@ function Wave({
     useEffect(() => {
         checkIfWalletIsConnected();
         refreshCurrentWaveCount();
+        getUsername();
     }, []);
 
     useEffect(() => {
         refreshCurrentWaveCount();
         getAllWaves();
+        getUsername();
     }, [currentAccount]);
 
     return (
@@ -229,8 +300,18 @@ function Wave({
                         alignItems: 'center',
                     }}
                     textAlign="center">
-                    <Typography component="h1" variant="h4">
-                        Welcome to Robert's wave portal.
+                    {username && (
+                        <Typography component="h1" variant="h4">
+                            Hi {username}! Welcome back.
+                        </Typography>
+                    )}
+                    <Typography>
+                        <Link
+                            component="button"
+                            variant="body2"
+                            onClick={updateUsername}>
+                            Update username
+                        </Link>
                     </Typography>
                     {!!waveCount && !pendingTransaction && (
                         <Typography component="h1" variant="h6" sx={{ mt: 5 }}>
@@ -311,13 +392,16 @@ const mapDispatchToProps = (dispatch) => {
             dispatch(WavesActions.waveCountUpdated({ updatedWaveCount })),
         wavesUpdated: (allWaves) =>
             dispatch(WavesActions.wavesUpdated({ allWaves })),
+        getUsernameSuccess: (username) =>
+            dispatch(MetaMaskActions.getUsernameSuccess({ username })),
     };
 };
 
 const mapStateToProps = (state) => {
     return {
-        currentAccount: state.metaMask.currentAccount,
         allWaves: state.waves.allWaves,
+        currentAccount: state.metaMask.currentAccount,
+        username: state.metaMask.username,
         waveCount: state.waves.waveCount,
     };
 };

@@ -5,7 +5,7 @@ const main = async () => {
 
     // This will compile the contract and generate the necessary files
     // needed to work with the contract under the artifacts directory.
-    // The Hardhat Runtime Environment, or HRE, 
+    // The Hardhat Runtime Environment, or HRE,
     // is an object containing all the functionality that Hardhat exposes when running a task, test or script.
     // hre is provided automatically when running 'npx hardhat...'
     const waveContractFactory = await hre.ethers.getContractFactory(
@@ -50,6 +50,9 @@ const main = async () => {
 
     const allWaves = await waveContract.getAllWaves();
     console.log(allWaves);
+
+    await waveContract.setUsername('robert');
+    console.log(await waveContract.username(owner.address));
 };
 
 const runMain = async () => {

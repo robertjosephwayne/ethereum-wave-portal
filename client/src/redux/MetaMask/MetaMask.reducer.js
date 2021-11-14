@@ -9,7 +9,14 @@ const reducer = createReducer(initialState, (builder) => {
     builder.addCase(MetaMaskActions.connectAccountSuccess, (state, action) => {
         return {
             ...state,
-            currentAccount: action.payload.account
+            currentAccount: action.payload.account,
+        };
+    });
+
+    builder.addCase(MetaMaskActions.getUsernameSuccess, (state, action) => {
+        return {
+            ...state,
+            username: action.payload.username,
         };
     });
 });

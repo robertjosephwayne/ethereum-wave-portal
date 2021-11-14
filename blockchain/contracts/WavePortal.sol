@@ -19,6 +19,7 @@ contract WavePortal {
     Wave[] waves;
 
     mapping(address => uint256) public lastWavedAt;
+    mapping(address => string) public username;
 
     constructor() payable {
         console.log("WavePortal contract constructor called.");
@@ -45,6 +46,10 @@ contract WavePortal {
     function getTotalWaves() public view returns (uint256) {
         console.log("We have %d total waves!", totalWaves);
         return totalWaves;
+    }
+
+    function setUsername(bytes32 memory _username) public {
+        username[msg.sender] = _username;
     }
 }
 
